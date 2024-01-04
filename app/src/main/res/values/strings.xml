@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">AlgarTechChallenge</string>
+    <string name="autocomplete_map_label" translatable="false">Map view of the selected address</string>
+    <string name="app_name" translatable="false">AlgarTechChallenge</string>
 </resources>

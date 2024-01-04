@@ -15,3 +15,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "AlgarTechChallenge"
 include(":app")
+include(":remoteLocation")
+include(":remote")
+include(":local")
