@@ -10,6 +10,16 @@ object Dependencies {
         Dependency.CoreKtx
     )
 
+    val remote = listOf(
+        Dependency.Moshi,
+        Dependency.MoshiAdapter,
+        Dependency.MoshiKotlin,
+        Dependency.RetrofitConverter,
+        Dependency.Retrofit2,
+        Dependency.Retrofit2GsonAdapter,
+        Dependency.Retrofit2LoggingInterceptor,
+    ).plus(common).plus(di)
+
     val app = listOf(
         Dependency.LiveData,
         Dependency.ViewModel,
