@@ -20,9 +20,9 @@ class WeatherRepositoryImplement @Inject constructor(
     val weathetService: WeathetService
 ) : WeatherRepositoy {
 
-    override fun getWeather(latitud: Double, longitud: Double): Flow<ResultType<WeatherModel>> =
+    override fun getWeather(latitud: Double, longitud: Double, appid: String): Flow<ResultType<WeatherModel>> =
         flow {
-            when (val response = weathetService.getWeatherByLatAndLon(latitud, longitud)) {
+            when (val response = weathetService.getWeatherByLatAndLon(latitud, longitud, appid)) {
                 is NetworkResult.NetWorkSuccess -> {
                     saveWeather(response.result.toModel())
                     emit(ResultType.Success(data = response.result.toModel()))

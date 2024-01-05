@@ -23,10 +23,10 @@ class WeatherGeoViewModel @Inject constructor(
     private val _viewState = MutableLiveData<MainViewState>()
     fun getViewState() = _viewState
 
-    fun getWeather(lat: Double, lon: Double) {
+    fun getWeather(lat: Double, lon: Double, appid: String) {
         viewModelScope.launch {
             try {
-                getWeatherUseCase.invoke(lat, lon)
+                getWeatherUseCase.invoke(lat, lon, appid)
                     .onStart { _viewState.value = MainViewState.Loading }
                     .catch {
                         _viewState.value =

@@ -7,7 +7,7 @@ import com.example.utilities.ResultType
 import kotlinx.coroutines.flow.Flow
 
 interface WeatherRepositoy {
-    fun getWeather(latitud: Double, longitud: Double): Flow<ResultType<WeatherModel>>
+    fun getWeather(latitud: Double, longitud: Double, appid: String): Flow<ResultType<WeatherModel>>
     suspend fun saveWeather(items: WeatherModel): Long
 
 }

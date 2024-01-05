@@ -31,10 +31,13 @@ android {
 
             buildConfigField("String", "PLACES_API_KEY", "\"${System.getenv("PLACES_API_KEY") ?: ""}\"")
             buildConfigField("String", "MAPS_API_KEY", "\"${System.getenv("MAPS_API_KEY") ?: ""}\"")
+            buildConfigField("String", "APP_ID_WEATHER", "\"${System.getenv("APP_ID_WEATHER") ?: ""}\"")
         }
         debug {
             buildConfigField("String", "PLACES_API_KEY", "\"${System.getenv("PLACES_API_KEY") ?: ""}\"")
             buildConfigField("String", "MAPS_API_KEY", "\"${System.getenv("MAPS_API_KEY") ?: ""}\"")
+            buildConfigField("String", "APP_ID_WEATHER", "\"${System.getenv("APP_ID_WEATHER") ?: ""}\"")
+
         }
     }
     compileOptions {

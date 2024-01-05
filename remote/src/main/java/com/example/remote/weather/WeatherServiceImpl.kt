@@ -8,9 +8,9 @@ import javax.inject.Inject
 
 class WeatherServiceImpl @Inject constructor(val weatherApi: WeatherApi) : WeathetService {
 
-    override suspend fun getWeatherByLatAndLon(latitud: Double,longitud: Double): NetworkResult<Root> =
+    override suspend fun getWeatherByLatAndLon(latitud: Double,longitud: Double, appid:String): NetworkResult<Root> =
         safeApiCall{
-            weatherApi.weather(latitud, longitud)
+            weatherApi.weather(latitud, longitud, appid)
         }
 
 }

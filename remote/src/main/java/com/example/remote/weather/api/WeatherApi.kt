@@ -9,7 +9,8 @@ interface WeatherApi {
     @GET("weather/")
     suspend fun weather(
         @Query("lat") latitud: Double,
-        @Query("lon") longitud: Double
+        @Query("lon") longitud: Double,
+        @Query("appid") appid: String
     ): Root
 
 }
