@@ -41,5 +41,8 @@ object Dependencies {
         Dependency.Kapt.RoomCompiler,
     ).plus(common).plus(di)
 
+    val repository = di.plus(common)
+    val models = common
+
 
 }

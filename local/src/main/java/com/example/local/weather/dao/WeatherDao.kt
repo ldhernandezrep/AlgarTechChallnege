@@ -15,7 +15,7 @@ interface WeatherDao {
     suspend fun insertOrIgnoreCategory(category: List<WeatherEntity>): List<Long>
 
     @Transaction
-    @Query(value = "SELECT * FROM weather  WHERE weather.latitud = :lat AND weather.longitud = :lon")
-    fun getWeatherByLatAndLon(lat: Double, lon: Double): Flow<List<WeatherEntity>>
+    @Query(value = "SELECT * FROM weather  WHERE weather.latitud = :lat AND weather.longitud = :lon LIMIT 1")
+    fun getWeatherByLatAndLon(lat: Double, lon: Double): Flow<WeatherEntity>
 
 }

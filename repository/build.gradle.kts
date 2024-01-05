@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.local"
+    namespace = "com.example.repository"
     compileSdk = 33
 
     defaultConfig {
@@ -35,9 +35,10 @@ android {
 
 dependencies {
 
-    customImplementation(Dependencies.database)
+    customImplementation(Dependencies.repository)
+    implementation(project(":local"))
+    implementation(project(":remote"))
     implementation(project(":models"))
-    testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
