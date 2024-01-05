@@ -99,6 +99,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             binding.autoCompleteTextView.visibility = View.VISIBLE
             binding.spinner.visibility = View.GONE
             binding.autoCompleteTextView.setText("")
+            adapter.clear()
+            adapter.notifyDataSetChanged()
         }
 
         lifecycle.addObserver(viewModel)
@@ -147,6 +149,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 binding.spinner.visibility = View.GONE
                 binding.lyMain.visibility = View.VISIBLE
                 binding.llProgressBar.root.visibility = View.GONE
+                adapter.clear()
+                adapter.notifyDataSetChanged()
             }
 
             else -> {}
