@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         binding.searchButton.setOnClickListener {
-            if (binding.autoCompleteTextView.text.toString().length > 6) {
+            if (binding.autoCompleteTextView.text.toString().length >= 5) {
                 viewModel.getLocations(binding.autoCompleteTextView.text.toString(), apiKey)
             }
         }
