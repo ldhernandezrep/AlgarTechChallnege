@@ -11,6 +11,7 @@ import com.example.repository.weather.mappers.toModel
 import com.example.utilities.ResultType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -32,17 +33,20 @@ class LocationGoogleRepositoryImpl @Inject constructor(
                             it.formattedAddress
                         )
                     }))
+
                 }
 
                 is NetworkResult.NetworkFailure -> {
                     when (val type = response.networkError.type) {
                         NetworkErrorType.CONNECTION_ERROR -> {
-                            // Intentar obtener el clima desde el almacenamiento local
-                            locationDao.getLocationByName(query)
-                                .catch { emit(ResultType.Error(message = "No hay datos para mostrar.")) }
-                                .collect {
-                                    emit(ResultType.Success(data = it.map { it.toModel() }))
-                                }
+                            // Solo intentar obtener datos locales si no has obtenido datos del servidor
+                                // Intentar obtener el clima desde el almacenamiento local
+                                locationDao.getLocationByName(query)
+                                    .catch { emit(ResultType.Error(message = "No hay datos para mostrar.")) }
+                                    .collect {
+                                        emit(ResultType.Success(data = it.map { it.toModel() }))
+                                    }
+
                         }
 
                         else -> {
@@ -53,7 +57,7 @@ class LocationGoogleRepositoryImpl @Inject constructor(
                 }
             }
 
-        }
+        }.conflate()
 
     override suspend fun saveLocations(items: List<LocationModel>): List<Long> =
         locationDao.insertOrIgnoreCategory(items.map { it.toEntity() })
