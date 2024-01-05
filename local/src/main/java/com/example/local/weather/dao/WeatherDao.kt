@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface WeatherDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertOrIgnoreWheater(weather: List<WeatherEntity>): List<Long>
+    suspend fun insertOrIgnoreWheater(weather: WeatherEntity): Long
 
     @Query("SELECT * FROM weathers WHERE weathers.latitud = :lat AND weathers.longitud = :lon LIMIT 1")
     fun getWeatherByLatAndLon(lat: Double, lon: Double): Flow<WeatherEntity>

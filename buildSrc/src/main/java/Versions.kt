@@ -30,6 +30,5 @@ object Versions {
     const val playService="18.0.0"
 
     const val maps ="18.0.1"
-    const val places= "3.0.0"
     const val mapsUtilies = "5.0.0"
 }

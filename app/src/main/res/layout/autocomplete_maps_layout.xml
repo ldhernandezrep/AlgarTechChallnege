@@ -11,6 +11,5 @@
         android:id="@+id/confirmation_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-    <!-- [END maps_solutions_android_autocomplete_map_fragment] -->
 
 </LinearLayout>

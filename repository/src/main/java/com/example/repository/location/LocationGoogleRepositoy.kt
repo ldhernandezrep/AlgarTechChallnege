@@ -7,4 +7,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface LocationGoogleRepositoy {
     fun getLocationsByName(query: String, apiKey: String): Flow<ResultType<List<LocationModel>>>
+    suspend fun saveLocations(items: List<LocationModel>): List<Long>
 }

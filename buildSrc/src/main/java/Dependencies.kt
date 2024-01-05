@@ -30,7 +30,6 @@ object Dependencies {
         Dependency.NavigationUI,
         Dependency.Glide,
         Dependency.Maps,
-        Dependency.Places,
         Dependency.MapsUtilities
     ).plus(common).plus(di)
 

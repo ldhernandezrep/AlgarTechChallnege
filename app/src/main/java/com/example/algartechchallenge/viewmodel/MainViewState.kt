@@ -6,6 +6,6 @@ import com.example.models.weather.WeatherModel
 sealed class MainViewState {
     object Loading: MainViewState()
     class ErrorLoadingItem(val message: String) : MainViewState()
-    class ItemSearch(val weather: WeatherModel) : MainViewState()
-    class ItemsSearch(val location: List<LocationModel>) : MainViewState()
+    class ItemWeatherSearch(val weather: WeatherModel) : MainViewState()
+    class ItemsLocationSearch(val location: List<LocationModel>) : MainViewState()
 }

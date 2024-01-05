@@ -19,6 +19,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -28,23 +29,38 @@ object NetWorkModule {
 
     @Singleton
     @Provides
-    fun provideRetrofit(): Retrofit {
+    @Named("baseUrlWeather")
+    fun provideBaseUrlWeather(): String {
+        return "https://api.openweathermap.org/data/2.5/"
+    }
 
-        val okHttpClient by lazy {
-            val builder = OkHttpClient.Builder()
-                .readTimeout(100L, TimeUnit.SECONDS)
-                .writeTimeout(100L, TimeUnit.SECONDS)
-                .connectTimeout(100L, TimeUnit.SECONDS)
-            builder.build()
-        }
+    @Singleton
+    @Provides
+    @Named("baseUrlLocations")
+    fun provideBaseUrlLocations(): String {
+        return "https://maps.googleapis.com/maps/api/"
+    }
 
+    @Provides
+    fun provideOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .readTimeout(100L, TimeUnit.SECONDS)
+            .writeTimeout(100L, TimeUnit.SECONDS)
+            .connectTimeout(100L, TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    @Named("weatherRetrofit")
+    fun provideRetrofit(@Named("baseUrlWeather") baseUrlWeather: String, okHttpClient: OkHttpClient): Retrofit {
         val moshi = Moshi.Builder()
             .add(Date::class.java, Rfc3339DateJsonAdapter().nullSafe())
             .add(KotlinJsonAdapterFactory())
             .build()
 
         return Retrofit.Builder()
-            .baseUrl(Config.BASE_URL)
+            .baseUrl(baseUrlWeather)
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
@@ -52,13 +68,29 @@ object NetWorkModule {
 
     @Singleton
     @Provides
-    fun providePlaceApi(retrofit: Retrofit): PlaceGoogleApi {
+    @Named("locationRetrofit")
+    fun provideLocationRetrofit(@Named("baseUrlLocations") baseUrl: String, okHttpClient: OkHttpClient): Retrofit {
+        val moshi = Moshi.Builder()
+            .add(Date::class.java, Rfc3339DateJsonAdapter().nullSafe())
+            .add(KotlinJsonAdapterFactory())
+            .build()
+
+        return Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .client(okHttpClient)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    fun providePlaceApi(@Named("locationRetrofit") retrofit: Retrofit): PlaceGoogleApi {
         return retrofit.create(PlaceGoogleApi::class.java)
     }
 
     @Singleton
     @Provides
-    fun provideWeatherApi(retrofit: Retrofit): WeatherApi {
+    fun provideWeatherApi(@Named("weatherRetrofit") retrofit: Retrofit): WeatherApi {
         return retrofit.create(WeatherApi::class.java)
     }
 

@@ -73,7 +73,6 @@ sealed class Dependency(private val version: String, private val pakage: String)
     object Maps : Dependency(version = Versions.maps, pakage = "com.google.android.gms:play-services-maps")
 
     object PlayService : Dependency(version = Versions.playService, pakage = "com.google.android.gms:play-services-location")
-    object Places : Dependency(version = Versions.places, pakage ="com.google.maps.android:places-ktx")
     object MapsUtilities : Dependency(version = Versions.mapsUtilies, pakage = "com.google.maps.android:maps-utils-ktx")
 
 }

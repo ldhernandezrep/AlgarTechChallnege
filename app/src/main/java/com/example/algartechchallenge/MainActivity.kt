@@ -2,16 +2,15 @@ package com.example.algartechchallenge
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewStub
+import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import com.example.algartechchallenge.databinding.ActivityMainBinding
+import com.example.algartechchallenge.viewmodel.MainViewState
 import com.example.algartechchallenge.viewmodel.WeatherGeoViewModel
+import com.example.utilities.observe
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
@@ -20,32 +19,21 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.model.PlaceTypes
-import com.google.android.libraries.places.widget.Autocomplete
-import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
-    private lateinit var mapPanel: View
 
     private val viewModel: WeatherGeoViewModel by viewModels()
+    private lateinit var adapter: ArrayAdapter<String>
     private var mapFragment: SupportMapFragment? = null
     private lateinit var coordinates: LatLng
     private var map: GoogleMap? = null
     private var marker: Marker? = null
     private var checkProximity = false
     private lateinit var binding: ActivityMainBinding
-    private var deviceLocation: LatLng? = null
-    private val acceptedProximity = 150.0
-    private var startAutocompleteIntentListener = View.OnClickListener { view: View ->
-        view.setOnClickListener(null)
-        startAutocompleteIntent()
-    }
 
-    private val startAutocomplete = registerForActivityResult(
+    /*private val startAutocomplete = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
         ActivityResultCallback { result: ActivityResult ->
             binding.autocompleteAddress1.setOnClickListener(startAutocompleteIntentListener)
@@ -59,8 +47,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             } else if (result.resultCode == RESULT_CANCELED) {
                 Log.i(TAG, "User canceled autocomplete")
             }
-        } as ActivityResultCallback<ActivityResult>)
-    private fun startAutocompleteIntent() {
+        } as ActivityResultCallback<ActivityResult>)*/
+    /*private fun startAutocompleteIntent() {
         val fields = listOf(
             Place.Field.ADDRESS_COMPONENTS,
             Place.Field.LAT_LNG, Place.Field.VIEWPORT
@@ -72,7 +60,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             .setTypesFilter(listOf(PlaceTypes.ADDRESS))
             .build(this)
         startAutocomplete.launch(intent)
-    }
+    }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,20 +71,78 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             return
         }
 
-        if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, apiKey)
-        }
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
-        setContentView(view)
 
-        // Attach an Autocomplete intent to the Address 1 EditText field
-        binding.autocompleteAddress1.setOnClickListener(startAutocompleteIntentListener)
+        mapFragment =
+            supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as SupportMapFragment?
+
+        // We only create a fragment if it doesn't already exist.
+        if (mapFragment == null) {
+            val mapOptions = GoogleMapOptions()
+            mapOptions.mapToolbarEnabled(false)
+            mapFragment = SupportMapFragment.newInstance(mapOptions)
+            supportFragmentManager
+                .beginTransaction()
+                .add(
+                    R.id.confirmation_map,
+                    mapFragment!!
+                )
+                .commit()
+            mapFragment!!.getMapAsync(this)
+        }
+
+        adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, emptyList())
+        binding.autoCompleteTextView.setAdapter(adapter)
+
+        binding.autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
+            val selectedItem = parent.getItemAtPosition(position) as String
+
+        }
+
+        binding.searchButton.setOnClickListener {
+            if (binding.autoCompleteTextView.text.toString().length > 6) {
+                viewModel.getLocations(binding.autoCompleteTextView.text.toString(), apiKey)
+            }
+        }
+
+        lifecycle.addObserver(viewModel)
+        observe(viewModel.getViewState(), ::onViewState)
+
+        setContentView(view)
 
     }
 
-    private fun fillInAddress(place: Place) {
+    private fun updateAdapter(results: List<String>) {
+        adapter.clear()
+        adapter.addAll(results)
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun onViewState(state: MainViewState?) {
+        when (state) {
+            MainViewState.Loading -> {
+
+            }
+
+            is MainViewState.ItemWeatherSearch -> {
+
+            }
+
+            is MainViewState.ItemsLocationSearch -> {
+                updateAdapter(state.location.map { it.name })
+            }
+
+            is MainViewState.ErrorLoadingItem -> {
+
+            }
+
+            else -> {}
+        }
+    }
+
+
+    /*private fun fillInAddress(place: Place) {
         val components = place.addressComponents
         val address1 = StringBuilder()
         val postcode = StringBuilder()
@@ -122,9 +168,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         binding.autocompleteAddress1.setText(address1.toString())
         showMap(place)
-    }
+    }*/
 
-    private fun showMap(place: Place) {
+    /*private fun showMap() {
         coordinates = place.latLng as LatLng
         mapFragment =
             supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as SupportMapFragment?
@@ -147,25 +193,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         } else {
             updateMap(coordinates)
         }
-    }
+    }*/
 
     private fun updateMap(latLng: LatLng) {
         marker!!.position = latLng
         map!!.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
-        if (mapPanel.visibility == View.GONE) {
-            mapPanel.visibility = View.VISIBLE
-        }
     }
 
     // [START maps_solutions_android_autocomplete_map_ready]
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-        map!!.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinates, 15f))
-        marker = map!!.addMarker(MarkerOptions().position(coordinates))
+        map!!.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(19.8039297, -99.0930528), 15f))
+        marker = map!!.addMarker(MarkerOptions().position(LatLng(19.8039297, -99.0930528)))
     }
 
     companion object {
-        private val TAG = MainActivity::class.java.simpleName
         private const val MAP_FRAGMENT_TAG = "MAP"
     }
 }

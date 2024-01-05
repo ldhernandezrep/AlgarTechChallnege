@@ -36,7 +36,7 @@ class WeatherGeoViewModel @Inject constructor(
                         when (result) {
                             is ResultType.Success -> {
                                 _viewState.value =
-                                    MainViewState.ItemSearch(weather = result.data)
+                                    MainViewState.ItemWeatherSearch(weather = result.data)
                             }
 
                             is ResultType.Error -> {
@@ -65,7 +65,7 @@ class WeatherGeoViewModel @Inject constructor(
                         when (result) {
                             is ResultType.Success -> {
                                 _viewState.value =
-                                    MainViewState.ItemsSearch(location = result.data)
+                                    MainViewState.ItemsLocationSearch(location = result.data)
                             }
 
                             is ResultType.Error -> {
