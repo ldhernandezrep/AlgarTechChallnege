@@ -8,11 +8,11 @@ import javax.inject.Inject
 
 
 interface IGetWeatherByGeoUseCase{
-    suspend fun invoke(lat: Double, lon: Double, appid: String) : Flow<ResultType<WeatherModel>>
+    suspend fun invoke(lat: Double, lon: Double, appid: String, name: String) : Flow<ResultType<WeatherModel>>
 }
 
 class GetWeatherByGeoUseCase @Inject constructor (private val weatherRepositoy: WeatherRepositoy) : IGetWeatherByGeoUseCase {
-    override suspend fun invoke(lat: Double, lon: Double, appid: String): Flow<ResultType<WeatherModel>> = weatherRepositoy.getWeather(lat,lon, appid)
+    override suspend fun invoke(lat: Double, lon: Double, appid: String, name:String): Flow<ResultType<WeatherModel>> = weatherRepositoy.getWeather(lat,lon, appid,name)
 
 
 }

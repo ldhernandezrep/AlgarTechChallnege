@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             ) {
                 val locationModel = adapter.getItem(position)
                 if (locationModel != null && locationModel.latitud!= 0.0 && locationModel.longitud !=0.0) {
-                    viewModel.getWeather(locationModel.latitud, locationModel.longitud,appId)
+                    viewModel.getWeather(locationModel.latitud, locationModel.longitud,appId, locationModel.name)
                 }else{
                     Toast.makeText(applicationContext,"No hay seleccion",Toast.LENGTH_LONG).show()
                 }

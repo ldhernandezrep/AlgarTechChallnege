@@ -21,7 +21,7 @@ class WeatherRepositoryImplement @Inject constructor(
     val weathetService: WeathetService
 ) : WeatherRepositoy {
 
-    override fun getWeather(latitud: Double, longitud: Double, appid: String): Flow<ResultType<WeatherModel>> =
+    override fun getWeather(latitud: Double, longitud: Double, appid: String,name: String): Flow<ResultType<WeatherModel>> =
         flow {
             when (val response = weathetService.getWeatherByLatAndLon(latitud, longitud, appid)) {
                 is NetworkResult.NetWorkSuccess -> {
@@ -32,7 +32,7 @@ class WeatherRepositoryImplement @Inject constructor(
                 is NetworkResult.NetworkFailure -> {
                     when (val type = response.networkError.type) {
                         NetworkErrorType.CONNECTION_ERROR -> {
-                            weatherLocal.getWeatherByLatAndLon(latitud.toThreeDigits(), longitud.toThreeDigits())
+                            weatherLocal.getWeatherByLatAndLon(name.take(5))
                                 .catch { emit(ResultType.Error(message = "No hay datos para mostrar.")) }
                                 .collect {
                                     emit(ResultType.Success(data = it.toModel()))
