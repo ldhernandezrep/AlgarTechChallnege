@@ -9,6 +9,7 @@ import com.example.remote.weather.WeathetService
 import com.example.repository.location.mappers.toEntity
 import com.example.repository.weather.mappers.toEntity
 import com.example.repository.weather.mappers.toModel
+import com.example.repository.weather.utils.toThreeDigits
 import com.example.utilities.ResultType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -31,7 +32,7 @@ class WeatherRepositoryImplement @Inject constructor(
                 is NetworkResult.NetworkFailure -> {
                     when (val type = response.networkError.type) {
                         NetworkErrorType.CONNECTION_ERROR -> {
-                            weatherLocal.getWeatherByLatAndLon(latitud, longitud)
+                            weatherLocal.getWeatherByLatAndLon(latitud.toThreeDigits(), longitud.toThreeDigits())
                                 .catch { emit(ResultType.Error(message = "No hay datos para mostrar.")) }
                                 .collect {
                                     emit(ResultType.Success(data = it.toModel()))
