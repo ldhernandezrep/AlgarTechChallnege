@@ -34,4 +34,12 @@ object Dependencies {
         Dependency.MapsUtilities
     ).plus(common).plus(di)
 
+    val database = listOf(
+        Dependency.RoomRuntime,
+        Dependency.RoomKtx,
+        Dependency.RoomPaging,
+        Dependency.Kapt.RoomCompiler,
+    ).plus(common).plus(di)
+
+
 }
