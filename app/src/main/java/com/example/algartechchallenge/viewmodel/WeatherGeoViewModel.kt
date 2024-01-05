@@ -8,7 +8,10 @@ import com.example.domain.location.IGetLocationGoogleUseCase
 import com.example.domain.weather.usecases.IGetWeatherByGeoUseCase
 import com.example.utilities.ResultType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,22 +20,21 @@ import javax.inject.Inject
 class WeatherGeoViewModel @Inject constructor(
     private val getWeatherUseCase: IGetWeatherByGeoUseCase,
     private val locationGoogleUseCase: IGetLocationGoogleUseCase
-) :
-    ViewModel(), LifecycleObserver {
+) : ViewModel(), LifecycleObserver {
 
     private val _viewState = MutableLiveData<MainViewState>()
     fun getViewState() = _viewState
+
+    private var locationjob: Job? = null
 
     fun getWeather(lat: Double, lon: Double, appid: String, query: String) {
         viewModelScope.launch {
             try {
                 getWeatherUseCase.invoke(lat, lon, appid, query)
-                    .onStart { _viewState.value = MainViewState.Loading }
-                    .catch {
+                    .onStart { _viewState.value = MainViewState.Loading }.catch {
                         _viewState.value =
                             MainViewState.ErrorLoadingItem(it.message ?: "Unknown error")
-                    }
-                    .collect { result ->
+                    }.collect { result ->
                         when (result) {
                             is ResultType.Success -> {
                                 _viewState.value =
@@ -40,8 +42,7 @@ class WeatherGeoViewModel @Inject constructor(
                             }
 
                             is ResultType.Error -> {
-                                _viewState.value =
-                                    MainViewState.ErrorLoadingItem(result.message)
+                                _viewState.value = MainViewState.ErrorLoadingItem(result.message)
                             }
                         }
                     }
@@ -53,32 +54,26 @@ class WeatherGeoViewModel @Inject constructor(
     }
 
     fun getLocations(query: String, apiKey: String) {
-        viewModelScope.launch {
-            try {
-                locationGoogleUseCase.invoke(query, apiKey)
-                    .onStart { _viewState.value = MainViewState.Loading }
-                    .catch {
-                        _viewState.value =
-                            MainViewState.ErrorLoadingItem(it.message ?: "Unknown error")
-                    }
-                    .collect { result ->
-                        when (result) {
-                            is ResultType.Success -> {
-                                _viewState.value =
-                                    MainViewState.ItemsLocationSearch(location = result.data)
-                            }
+        locationjob?.cancel()
+        locationjob = viewModelScope.launch {
+            locationGoogleUseCase.invoke(query, apiKey)
+                .onStart { _viewState.value = MainViewState.Loading }.catch { exception ->
+                    _viewState.value =
+                        MainViewState.ErrorLoadingItem(exception.message ?: "Unknown error")
+                }.cancellable().collectLatest { result ->
+                    when (result) {
+                        is ResultType.Success -> {
+                            _viewState.value =
+                                MainViewState.ItemsLocationSearch(location = result.data)
+                        }
 
-                            is ResultType.Error -> {
-                                _viewState.value =
-                                    MainViewState.ErrorLoadingItem(result.message)
-                            }
+                        is ResultType.Error -> {
+                            _viewState.value = MainViewState.ErrorLoadingItem(result.message)
                         }
                     }
-            } catch (exception: Exception) {
-                _viewState.value =
-                    MainViewState.ErrorLoadingItem(exception.message ?: "Unknown error")
-            }
+                }
         }
     }
+
 
 }
