@@ -7,7 +7,9 @@ import com.example.remote.location.response.Geometry
 import com.example.remote.location.response.GoogleLocationResponse
 import com.example.remote.location.response.Location
 import com.example.remote.location.response.Northeast
+import com.example.remote.location.response.OpeningHours
 import com.example.remote.location.response.Photo
+import com.example.remote.location.response.PlusCode
 import com.example.remote.location.response.Result
 import com.example.remote.location.response.Southwest
 import com.example.remote.location.response.Viewport
@@ -38,6 +40,7 @@ class PlaceGoogleServiceImplTest {
             htmlAttributions = emptyList(),
             results = listOf(
                 Result(
+                    businessStatus = "",
                     formattedAddress = "Zumpango de Ocampo, Méx., México",
                     geometry = Geometry(
                         location = Location(lat = 19.8039297, lng = -99.0930528),
@@ -46,6 +49,10 @@ class PlaceGoogleServiceImplTest {
                             southwest = Southwest(lat = 19.7719895, lng = -99.1193428)
                         )
                     ),
+                    plusCode = PlusCode("",""),
+                    openingHours = OpeningHours(true),
+                    rating = 12.67,
+                    userRatingsTotal = 14,
                     icon = "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/geocode-71.png",
                     iconBackgroundColor = "#7B9EB0",
                     iconMaskBaseUri = "https://maps.gstatic.com/mapfiles/place_api/icons/v2/generic_pinlet",
@@ -63,7 +70,8 @@ class PlaceGoogleServiceImplTest {
                     types = listOf("locality", "political")
                 )
             ),
-            status = "200"
+            status = "200",
+            nextPageToken = ""
         )
         coEvery { placeGoogleApi.searchPlaces("Zumpango", "Uno") } returns simulatedResponse
         val result = placeGoogleService.getLocationByQuery("Zumpango", "Uno")

@@ -26,7 +26,7 @@ class LocationGoogleRepositoryImpl @Inject constructor(
             when (val response = remote.getLocationByQuery(query, apiKey)) {
                 is NetworkResult.NetWorkSuccess -> {
                     // Emitir el resultado exitoso al flujo
-                    saveLocations(response.result.results.map { it.geometry.location.toModel(it.formattedAddress) })
+                    locationDao.insertOrIgnoreCategory(response.result.results.map { it.geometry.location.toModel(it.formattedAddress).toEntity() })
                     emit(ResultType.Success(data = response.result.results.map {
                         it.geometry.location.toModel(
                             it.formattedAddress
@@ -46,8 +46,8 @@ class LocationGoogleRepositoryImpl @Inject constructor(
                         }
 
                         else -> {
-                            // Emitir un error de red al flujo
-                            emit(ResultType.Error("Error de red: ${type.name}"))
+                            //Si es otro tipo de error
+                            emit(ResultType.Error("Error desconocido"))
                         }
                     }
                 }
