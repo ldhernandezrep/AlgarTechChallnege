@@ -1,15 +1,15 @@
 package com.example.algartechchallenge
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.view.ViewStub
-import android.widget.ArrayAdapter
+import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import com.example.algartechchallenge.databinding.ActivityMainBinding
 import com.example.algartechchallenge.viewmodel.MainViewState
 import com.example.algartechchallenge.viewmodel.WeatherGeoViewModel
+import com.example.models.location.LocationModel
 import com.example.utilities.observe
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -25,186 +25,154 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val viewModel: WeatherGeoViewModel by viewModels()
-    private lateinit var adapter: ArrayAdapter<String>
+    private lateinit var adapter: LocationAdapter
     private var mapFragment: SupportMapFragment? = null
     private lateinit var coordinates: LatLng
     private var map: GoogleMap? = null
     private var marker: Marker? = null
-    private var checkProximity = false
     private lateinit var binding: ActivityMainBinding
-
-    /*private val startAutocomplete = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
-        ActivityResultCallback { result: ActivityResult ->
-            binding.autocompleteAddress1.setOnClickListener(startAutocompleteIntentListener)
-            if (result.resultCode == RESULT_OK) {
-                val intent = result.data
-                if (intent != null) {
-                    val place = Autocomplete.getPlaceFromIntent(intent)
-                    Log.d(TAG, "Place: " + place.addressComponents)
-                    fillInAddress(place)
-                }
-            } else if (result.resultCode == RESULT_CANCELED) {
-                Log.i(TAG, "User canceled autocomplete")
-            }
-        } as ActivityResultCallback<ActivityResult>)*/
-    /*private fun startAutocompleteIntent() {
-        val fields = listOf(
-            Place.Field.ADDRESS_COMPONENTS,
-            Place.Field.LAT_LNG, Place.Field.VIEWPORT
-        )
-
-        // Build the autocomplete intent with field, country, and type filters applied
-        val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
-            .setCountries(listOf("MEX"))
-            .setTypesFilter(listOf(PlaceTypes.ADDRESS))
-            .build(this)
-        startAutocomplete.launch(intent)
-    }*/
+    private var locationModel = LocationModel(19.8039297, -99.0930528, "Zumpango")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        initializeViews()
+        setupMapFragment()
+
+        binding.apply {
+            spinner.adapter = adapter
+
+            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    val locationModel = adapter.getItem(position)
+                    if (locationModel != null) {
+                        viewModel.getWeather(locationModel.latitud, locationModel.longitud, BuildConfig.APP_ID_WEATHER)
+                    }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    // Manejar caso cuando no se ha seleccionado nada (opcional)
+                }
+            }
+
+            searchButton.setOnClickListener {
+                if (autoCompleteTextView.text.toString().length > 6) {
+                    viewModel.getLocations(autoCompleteTextView.text.toString(), BuildConfig.PLACES_API_KEY)
+                }
+            }
+
+            clearButton.setOnClickListener {
+                autoCompleteTextView.visibility = View.VISIBLE
+                spinner.visibility = View.GONE
+            }
+
+            lifecycle.addObserver(viewModel)
+            observe(viewModel.getViewState(), ::onViewState)
+        }
+    }
+
+    private fun initializeViews() {
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+        adapter = LocationAdapter(this, mutableListOf())
+    }
+
+    private fun setupMapFragment() {
         val apiKey = BuildConfig.PLACES_API_KEY
-        if (apiKey.isEmpty()) {
+        val appId = BuildConfig.APP_ID_WEATHER
+        if (apiKey.isEmpty() || appId.isEmpty()) {
             Toast.makeText(this, "error_api_key", Toast.LENGTH_LONG).show()
             return
         }
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        val view = binding.root
+        mapFragment = supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as SupportMapFragment?
 
-        mapFragment =
-            supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as SupportMapFragment?
-
-        // We only create a fragment if it doesn't already exist.
         if (mapFragment == null) {
             val mapOptions = GoogleMapOptions()
             mapOptions.mapToolbarEnabled(false)
             mapFragment = SupportMapFragment.newInstance(mapOptions)
-            supportFragmentManager
-                .beginTransaction()
-                .add(
-                    R.id.confirmation_map,
-                    mapFragment!!
-                )
-                .commit()
+            supportFragmentManager.beginTransaction().add(R.id.confirmation_map, mapFragment!!).commit()
             mapFragment!!.getMapAsync(this)
         }
-
-        adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, emptyList())
-        binding.autoCompleteTextView.setAdapter(adapter)
-
-        binding.autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
-            val selectedItem = parent.getItemAtPosition(position) as String
-
-        }
-
-        binding.searchButton.setOnClickListener {
-            if (binding.autoCompleteTextView.text.toString().length > 6) {
-                viewModel.getLocations(binding.autoCompleteTextView.text.toString(), apiKey)
-            }
-        }
-
-        lifecycle.addObserver(viewModel)
-        observe(viewModel.getViewState(), ::onViewState)
-
-        setContentView(view)
-
-    }
-
-    private fun updateAdapter(results: List<String>) {
-        adapter.clear()
-        adapter.addAll(results)
-        adapter.notifyDataSetChanged()
     }
 
     private fun onViewState(state: MainViewState?) {
-        when (state) {
-            MainViewState.Loading -> {
+        binding.apply {
+            when (state) {
+                MainViewState.Loading -> {
+                    lyMain.visibility = View.GONE
+                    llProgressBar.root.visibility = View.VISIBLE
+                }
 
-            }
+                is MainViewState.ItemWeatherSearch -> {
+                    lyMain.visibility = View.VISIBLE
+                    llProgressBar.root.visibility = View.GONE
+                    updateMap(
+                        state.weather.latitud,
+                        state.weather.longitud,
+                        state.weather.main,
+                        state.weather.temp,
+                        state.weather.name
+                    )
+                }
 
-            is MainViewState.ItemWeatherSearch -> {
+                is MainViewState.ItemsLocationSearch -> {
+                    autoCompleteTextView.visibility = View.GONE
+                    spinner.visibility = View.VISIBLE
+                    lyMain.visibility = View.VISIBLE
+                    llProgressBar.root.visibility = View.GONE
+                    updateAdapter(state.location)
+                }
 
-            }
+                is MainViewState.ErrorLoadingItem -> {
+                    autoCompleteTextView.visibility = View.VISIBLE
+                    spinner.visibility = View.GONE
+                    lyMain.visibility = View.VISIBLE
+                    llProgressBar.root.visibility = View.GONE
+                }
 
-            is MainViewState.ItemsLocationSearch -> {
-                updateAdapter(state.location.map { it.name })
-            }
-
-            is MainViewState.ErrorLoadingItem -> {
-
-            }
-
-            else -> {}
-        }
-    }
-
-
-    /*private fun fillInAddress(place: Place) {
-        val components = place.addressComponents
-        val address1 = StringBuilder()
-        val postcode = StringBuilder()
-
-        if (components != null) {
-            for (component in components.asList()) {
-                when (component.types[0]) {
-                    "street_number" -> {
-                        address1.insert(0, component.name)
-                    }
-                    "route" -> {
-                        address1.append(" ")
-                        address1.append(component.shortName)
-                    }
-                    "postal_code" -> {
-                        postcode.insert(0, component.name)
-                    }
-                    "postal_code_suffix" -> {
-                        postcode.append("-").append(component.name)
-                    }
+                else -> {
                 }
             }
         }
-        binding.autocompleteAddress1.setText(address1.toString())
-        showMap(place)
-    }*/
-
-    /*private fun showMap() {
-        coordinates = place.latLng as LatLng
-        mapFragment =
-            supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as SupportMapFragment?
-
-        // We only create a fragment if it doesn't already exist.
-        if (mapFragment == null) {
-            mapPanel = (findViewById<View>(R.id.stub_map) as ViewStub).inflate()
-            val mapOptions = GoogleMapOptions()
-            mapOptions.mapToolbarEnabled(false)
-            mapFragment = SupportMapFragment.newInstance(mapOptions)
-            supportFragmentManager
-                .beginTransaction()
-                .add(
-                    R.id.confirmation_map,
-                    mapFragment!!,
-                    MAP_FRAGMENT_TAG
-                )
-                .commit()
-            mapFragment!!.getMapAsync(this)
-        } else {
-            updateMap(coordinates)
-        }
-    }*/
-
-    private fun updateMap(latLng: LatLng) {
-        marker!!.position = latLng
-        map!!.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
     }
 
-    // [START maps_solutions_android_autocomplete_map_ready]
+    private fun updateAdapter(results: List<LocationModel>) {
+        val data = results.toMutableList()
+        adapter.clear()
+        adapter.addAll(data)
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun updateMap(latitud: Double, longitud: Double, clima: String, temp: Double, name: String) {
+        marker!!.position = LatLng(latitud, longitud)
+        marker!!.title = name
+
+        val snippetContent = "<html><body><b>Clima:</b> $clima<br/><b>Temperatura:</b> $temp</body></html>"
+        marker!!.snippet = snippetContent
+
+        map!!.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitud, longitud), 15f))
+    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-        map!!.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(19.8039297, -99.0930528), 15f))
-        marker = map!!.addMarker(MarkerOptions().position(LatLng(19.8039297, -99.0930528)))
+        map!!.moveCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                LatLng(
+                    locationModel.latitud,
+                    locationModel.longitud
+                ), 15f
+            )
+        )
+        marker = map!!.addMarker(
+            MarkerOptions().position(
+                LatLng(
+                    locationModel.latitud,
+                    locationModel.longitud
+                )
+            )
+        )
     }
 
     companion object {
