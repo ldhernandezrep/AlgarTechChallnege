@@ -15,7 +15,7 @@ interface LocationDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnoreCategory(category: List<LocationEntity>): List<Long>
 
-    @Query("SELECT * FROM locations WHERE locations.name LIKE '%' || :query || '%'")
+    @Query("SELECT * FROM locations WHERE locations.name LIKE '%' || :query || '%' GROUP BY locations.name ")
     fun getLocationByName(query: String): Flow<List<LocationEntity>>
 
 
