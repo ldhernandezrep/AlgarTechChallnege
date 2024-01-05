@@ -79,13 +79,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 id: Long
             ) {
                 val locationModel = adapter.getItem(position)
-                if (locationModel != null) {
+                if (locationModel != null && locationModel.latitud!= 0.0 && locationModel.longitud !=0.0) {
                     viewModel.getWeather(locationModel.latitud, locationModel.longitud,appId)
+                }else{
+                    Toast.makeText(applicationContext,"No hay seleccion",Toast.LENGTH_LONG).show()
                 }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 // Manejar caso cuando no se ha seleccionado nada (opcional)
+                Toast.makeText(applicationContext,"No hay seleccion",Toast.LENGTH_LONG).show()
             }
         }
 
@@ -111,7 +114,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun updateAdapter(results: List<LocationModel>) {
-        val data = results.toMutableList()
+        val defaultOption = LocationModel(0.0, 0.0, "Selecciona una opción")
+        val data = mutableListOf(defaultOption)
+        data.addAll(results)
         adapter.clear()
         adapter.addAll(data)
         adapter.notifyDataSetChanged()
