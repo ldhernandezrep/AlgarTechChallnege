@@ -6,9 +6,9 @@ import com.example.remote.common.NetworkResult
 import com.example.remote.weather.response.Root
 import javax.inject.Inject
 
-class WeatherServiceImpl @Inject constructor(val weatherApi: WeatherApi) {
+class WeatherServiceImpl @Inject constructor(val weatherApi: WeatherApi) : WeathetService {
 
-    suspend fun getPokemonByName(latitud: Double,longitud: Double): NetworkResult<Root> =
+    override suspend fun getWeatherByLatAndLon(latitud: Double,longitud: Double): NetworkResult<Root> =
         safeApiCall{
             weatherApi.weather(latitud, longitud)
         }
