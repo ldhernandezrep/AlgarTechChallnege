@@ -32,7 +32,7 @@ class WeatherRepositoryImplement @Inject constructor(
                 is NetworkResult.NetworkFailure -> {
                     when (val type = response.networkError.type) {
                         NetworkErrorType.CONNECTION_ERROR -> {
-                            weatherLocal.getWeatherByLatAndLon(name.take(5))
+                            weatherLocal.getWeatherByName(name.take(5).trim().lowercase())
                                 .catch { emit(ResultType.Error(message = "No hay datos para mostrar.")) }
                                 .collect {
                                     emit(ResultType.Success(data = it.toModel()))

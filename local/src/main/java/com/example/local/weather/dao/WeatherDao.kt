@@ -13,7 +13,7 @@ interface WeatherDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnoreWheater(weather: WeatherEntity): Long
 
-    @Query("SELECT * FROM weathers WHERE weathers.name LIKE '' || :query || '%' GROUP BY weathers.name LIMIT 1")
-    fun getWeatherByLatAndLon(query: String): Flow<WeatherEntity>
+    @Query("SELECT * FROM weathers WHERE REPLACE(TRIM(LOWER(weathers.name)), ' ', '') LIKE :query || '%' GROUP BY weathers.name LIMIT 1")
+    fun getWeatherByName(query: String): Flow<WeatherEntity>
 
 }
