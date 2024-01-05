@@ -120,6 +120,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         adapter.clear()
         adapter.addAll(data)
         adapter.notifyDataSetChanged()
+        binding.spinner.setSelection(0)
     }
 
     private fun onViewState(state: MainViewState?) {
@@ -171,7 +172,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     ) {
         marker!!.position = LatLng(latitud, longitud)
         marker!!.title = name
-        marker!!.snippet = "Clima : ${clima} \n Temperatura : ${temp}"
+        marker!!.snippet = "Clima : ${clima} , Temperatura : ${temp}"
         map!!.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitud, longitud), 15f))
     }
 
