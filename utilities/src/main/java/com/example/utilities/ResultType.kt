@@ -1,4 +1,4 @@
-package com.example.repository.common
+package com.example.utilities
 
 sealed class ResultType<out T> {
     data class Success<out T>(val data: T) : ResultType<T>()

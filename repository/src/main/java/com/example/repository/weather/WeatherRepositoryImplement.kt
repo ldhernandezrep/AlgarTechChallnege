@@ -5,8 +5,8 @@ import com.example.models.weather.WeatherModel
 import com.example.remote.common.NetworkErrorType
 import com.example.remote.common.NetworkResult
 import com.example.remote.weather.WeathetService
-import com.example.repository.common.ResultType
 import com.example.repository.weather.mappers.toModel
+import com.example.utilities.ResultType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow

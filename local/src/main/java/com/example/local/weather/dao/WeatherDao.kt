@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import com.example.local.weather.entities.WeatherEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -12,10 +11,9 @@ import kotlinx.coroutines.flow.Flow
 interface WeatherDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertOrIgnoreCategory(category: List<WeatherEntity>): List<Long>
+    suspend fun insertOrIgnoreWheater(weather: List<WeatherEntity>): List<Long>
 
-    @Transaction
-    @Query(value = "SELECT * FROM weather  WHERE weather.latitud = :lat AND weather.longitud = :lon LIMIT 1")
+    @Query("SELECT * FROM weathers WHERE weathers.latitud = :lat AND weathers.longitud = :lon LIMIT 1")
     fun getWeatherByLatAndLon(lat: Double, lon: Double): Flow<WeatherEntity>
 
 }

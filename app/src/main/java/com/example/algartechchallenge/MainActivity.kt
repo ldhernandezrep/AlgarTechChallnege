@@ -1,9 +1,5 @@
 package com.example.algartechchallenge
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.pm.PackageManager
-import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -13,16 +9,15 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.activity.viewModels
 import com.example.algartechchallenge.databinding.ActivityMainBinding
-import com.google.android.gms.location.LocationServices
+import com.example.algartechchallenge.viewmodel.WeatherGeoViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
@@ -30,11 +25,13 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.PlaceTypes
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
-import com.google.maps.android.SphericalUtil.computeDistanceBetween
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mapPanel: View
 
+    private val viewModel: WeatherGeoViewModel by viewModels()
     private var mapFragment: SupportMapFragment? = null
     private lateinit var coordinates: LatLng
     private var map: GoogleMap? = null
@@ -48,7 +45,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         startAutocompleteIntent()
     }
 
-    // [START maps_solutions_android_autocomplete_define]
     private val startAutocomplete = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
         ActivityResultCallback { result: ActivityResult ->
@@ -57,23 +53,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 val intent = result.data
                 if (intent != null) {
                     val place = Autocomplete.getPlaceFromIntent(intent)
-
-                    // Write a method to read the address components from the Place
-                    // and populate the form with the address components
                     Log.d(TAG, "Place: " + place.addressComponents)
                     fillInAddress(place)
                 }
             } else if (result.resultCode == RESULT_CANCELED) {
-                // The user canceled the operation.
                 Log.i(TAG, "User canceled autocomplete")
             }
         } as ActivityResultCallback<ActivityResult>)
-    // [END maps_solutions_android_autocomplete_define]
-
-    // [START maps_solutions_android_autocomplete_intent]
     private fun startAutocompleteIntent() {
-        // Set the fields to specify which types of place data to
-        // return after the user has made a selection.
         val fields = listOf(
             Place.Field.ADDRESS_COMPONENTS,
             Place.Field.LAT_LNG, Place.Field.VIEWPORT
@@ -86,7 +73,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             .build(this)
         startAutocomplete.launch(intent)
     }
-    // [END maps_solutions_android_autocomplete_intent]
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,7 +83,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             return
         }
 
-        // Setup Places Client
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, apiKey)
         }
@@ -109,20 +94,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         // Attach an Autocomplete intent to the Address 1 EditText field
         binding.autocompleteAddress1.setOnClickListener(startAutocompleteIntentListener)
 
-        // Update checkProximity when user checks the checkbox
-       /* val checkProximityBox = findViewById<CheckBox>(R.id.checkbox_proximity)
-        checkProximityBox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-            // Set the boolean to match user preference for when the Submit button is clicked
-            checkProximity = isChecked
-        }
-
-        // Submit and optionally check proximity
-        val saveButton = findViewById<Button>(R.id.autocomplete_save_button)
-        saveButton.setOnClickListener { saveForm() }
-
-        // Reset the form
-        val resetButton = findViewById<Button>(R.id.autocomplete_reset_button)
-        resetButton.setOnClickListener { clearForm() }*/
     }
 
     private fun fillInAddress(place: Place) {
@@ -150,17 +121,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
         binding.autocompleteAddress1.setText(address1.toString())
-
-        // Add a map for visual confirmation of the address
         showMap(place)
     }
 
-    // [START maps_solutions_android_autocomplete_map_add]
     private fun showMap(place: Place) {
         coordinates = place.latLng as LatLng
-
-        // It isn't possible to set a fragment's id programmatically so we set a tag instead and
-        // search for it using that.
         mapFragment =
             supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as SupportMapFragment?
 
@@ -169,11 +134,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             mapPanel = (findViewById<View>(R.id.stub_map) as ViewStub).inflate()
             val mapOptions = GoogleMapOptions()
             mapOptions.mapToolbarEnabled(false)
-
-            // To programmatically add the map, we first create a SupportMapFragment.
             mapFragment = SupportMapFragment.newInstance(mapOptions)
-
-            // Then we add it using a FragmentTransaction.
             supportFragmentManager
                 .beginTransaction()
                 .add(
@@ -187,7 +148,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             updateMap(coordinates)
         }
     }
-    // [END maps_solutions_android_autocomplete_map_add]
 
     private fun updateMap(latLng: LatLng) {
         marker!!.position = latLng

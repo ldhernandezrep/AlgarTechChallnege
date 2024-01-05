@@ -4,11 +4,11 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "weather"
+    tableName = "weathers"
 )
 data class WeatherEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: String? = "",
+    @PrimaryKey(autoGenerate = false)
+    val id: String,
     val latitud: Double,
     val longitud: Double,
     val main: String,

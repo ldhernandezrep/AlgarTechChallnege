@@ -3,6 +3,7 @@ package com.example.repository.weather.mappers
 import com.example.local.weather.entities.WeatherEntity
 import com.example.models.weather.WeatherModel
 import com.example.remote.weather.response.Root
+import java.util.UUID
 
 fun WeatherModel.toEntity() = WeatherEntity(
     main = this.main,
@@ -10,6 +11,7 @@ fun WeatherModel.toEntity() = WeatherEntity(
     longitud = this.longitud,
     name = this.name,
     temp = this.temp,
+    id = UUID.randomUUID().toString()
 )
 
 fun WeatherEntity.toModel() = WeatherModel(

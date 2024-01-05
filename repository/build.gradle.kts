@@ -1,12 +1,13 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    id("dagger.hilt.android.plugin")
     kotlin("kapt")
 }
 
 android {
     namespace = "com.example.repository"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24
@@ -38,7 +39,9 @@ dependencies {
     customImplementation(Dependencies.repository)
     implementation(project(":local"))
     implementation(project(":remote"))
+    implementation(project(":utilities"))
     implementation(project(":models"))
+    testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }

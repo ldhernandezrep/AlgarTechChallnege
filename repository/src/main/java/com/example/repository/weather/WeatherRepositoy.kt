@@ -1,7 +1,7 @@
 package com.example.repository.weather
 
 import com.example.models.weather.WeatherModel
-import com.example.repository.common.ResultType
+import com.example.utilities.ResultType
 import kotlinx.coroutines.flow.Flow
 
 interface WeatherRepositoy {

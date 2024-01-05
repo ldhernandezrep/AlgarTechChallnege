@@ -15,8 +15,7 @@ interface LocationDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnoreCategory(category: List<LocationEntity>): List<Long>
 
-    @Transaction
-    @Query(value = "SELECT * FROM location  WHERE location.name = :name")
-    fun getWeatherByLatAndLon(name: String): Flow<List<WeatherEntity>>
+    @Query("SELECT * FROM locations  WHERE locations.name = :name")
+    fun getLocationByName(name: String): Flow<List<LocationEntity>>
 
 }

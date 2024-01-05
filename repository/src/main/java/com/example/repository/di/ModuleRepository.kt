@@ -1,5 +1,7 @@
 package com.example.repository.di
 
+import com.example.repository.location.LocationGoogleRepositoryImpl
+import com.example.repository.location.LocationGoogleRepositoy
 import com.example.repository.weather.WeatherRepositoryImplement
 import com.example.repository.weather.WeatherRepositoy
 import dagger.Binds
@@ -13,6 +15,9 @@ interface ModuleRepository{
 
     @Binds
     fun providerWeatherRepository(weatherRepositoryImplement: WeatherRepositoryImplement): WeatherRepositoy
+
+    @Binds
+    fun providerLocationRepository(locationGoogleRepositoryImpl: LocationGoogleRepositoryImpl): LocationGoogleRepositoy
 
 
 }

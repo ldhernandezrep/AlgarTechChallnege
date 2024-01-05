@@ -3,11 +3,12 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.currentBuildId
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    kotlin("kapt")
 }
 
 android {
     namespace = "com.example.models"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24

@@ -2,6 +2,11 @@ package com.example.remote.di
 
 import com.example.remote.weather.api.WeatherApi
 import com.example.remote.common.Config
+import com.example.remote.location.PlaceGoogleApi
+import com.example.remote.location.PlaceGoogleService
+import com.example.remote.location.PlaceGoogleServiceImpl
+import com.example.remote.weather.WeatherServiceImpl
+import com.example.remote.weather.WeathetService
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -47,14 +52,26 @@ object NetWorkModule {
 
     @Singleton
     @Provides
-    fun providePokemonApi(retrofit: Retrofit): WeatherApi {
+    fun providePlaceApi(retrofit: Retrofit): PlaceGoogleApi {
+        return retrofit.create(PlaceGoogleApi::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideWeatherApi(retrofit: Retrofit): WeatherApi {
         return retrofit.create(WeatherApi::class.java)
     }
 
-    /*@Singleton
+    @Singleton
     @Provides
-    fun providePokemonNetworkService(pokemonApi: PokemonApi): PokemonListService {
-        return PokemonListServiceImp(pokemonApi)
-    }*/
+    fun providerWeatherService(weatherApi: WeatherApi): WeathetService {
+        return WeatherServiceImpl(weatherApi)
+    }
+
+    @Singleton
+    @Provides
+    fun providerPlaceService(placeGoogleApi: PlaceGoogleApi): PlaceGoogleService {
+        return PlaceGoogleServiceImpl(placeGoogleApi)
+    }
 
 }
