@@ -13,6 +13,7 @@ import com.example.repository.weather.utils.toThreeDigits
 import com.example.utilities.ResultType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -21,7 +22,12 @@ class WeatherRepositoryImplement @Inject constructor(
     val weathetService: WeathetService
 ) : WeatherRepositoy {
 
-    override fun getWeather(latitud: Double, longitud: Double, appid: String,name: String): Flow<ResultType<WeatherModel>> =
+    override fun getWeather(
+        latitud: Double,
+        longitud: Double,
+        appid: String,
+        name: String
+    ): Flow<ResultType<WeatherModel>> =
         flow {
             when (val response = weathetService.getWeatherByLatAndLon(latitud, longitud, appid)) {
                 is NetworkResult.NetWorkSuccess -> {
@@ -33,9 +39,14 @@ class WeatherRepositoryImplement @Inject constructor(
                     when (val type = response.networkError.type) {
                         NetworkErrorType.CONNECTION_ERROR -> {
                             weatherLocal.getWeatherByName(name.take(5).trim().lowercase())
-                                .catch { emit(ResultType.Error(message = "No hay datos para mostrar.")) }
+                                .catch {
+                                    emit(ResultType.Error(message = "No hay datos para mostrar."))
+                                }
                                 .collect {
-                                    emit(ResultType.Success(data = it.toModel()))
+                                    if (it == null)
+                                        emit(ResultType.Error(message = "No hay datos para mostrar."))
+                                    else
+                                        emit(ResultType.Success(data = it.toModel()))
                                 }
                         }
 
@@ -46,7 +57,12 @@ class WeatherRepositoryImplement @Inject constructor(
                 }
             }
 
+        }.flatMapLatest { result ->
+            flow {
+                emit(result)
+            }
         }
 
-    override suspend fun saveWeather(item: WeatherModel): Long = weatherLocal.insertOrIgnoreWheater(item.toEntity())
+    override suspend fun saveWeather(item: WeatherModel): Long =
+        weatherLocal.insertOrIgnoreWheater(item.toEntity())
 }

@@ -9,6 +9,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
+import com.example.algartechchallenge.common.hideKeyboard
 import com.example.algartechchallenge.databinding.ActivityMainBinding
 import com.example.algartechchallenge.viewmodel.MainViewState
 import com.example.algartechchallenge.viewmodel.WeatherGeoViewModel
@@ -22,6 +23,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -94,6 +96,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         binding.searchButton.setOnClickListener {
             if (binding.autoCompleteTextView.text.toString().length >= 5) {
+                applicationContext.hideKeyboard(binding.root)
                 viewModel.getLocations(binding.autoCompleteTextView.text.toString(), apiKey)
             }
         }
@@ -157,6 +160,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 binding.llProgressBar.root.visibility = View.GONE
                 adapter.clear()
                 adapter.notifyDataSetChanged()
+                Snackbar.make(binding.root, state.message, Snackbar.LENGTH_LONG).show()
             }
 
             else -> {}

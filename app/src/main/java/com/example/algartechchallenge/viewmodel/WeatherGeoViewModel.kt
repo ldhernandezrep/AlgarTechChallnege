@@ -26,15 +26,17 @@ class WeatherGeoViewModel @Inject constructor(
     fun getViewState() = _viewState
 
     private var locationjob: Job? = null
+    private var weatherjob: Job? = null
 
     fun getWeather(lat: Double, lon: Double, appid: String, query: String) {
-        viewModelScope.launch {
+        weatherjob?.cancel()
+        weatherjob = viewModelScope.launch {
             try {
                 getWeatherUseCase.invoke(lat, lon, appid, query)
                     .onStart { _viewState.value = MainViewState.Loading }.catch {
                         _viewState.value =
                             MainViewState.ErrorLoadingItem(it.message ?: "Unknown error")
-                    }.collect { result ->
+                    }.cancellable().collectLatest { result ->
                         when (result) {
                             is ResultType.Success -> {
                                 _viewState.value =
