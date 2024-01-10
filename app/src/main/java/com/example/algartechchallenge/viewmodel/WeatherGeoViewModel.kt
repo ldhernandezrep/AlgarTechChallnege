@@ -46,6 +46,8 @@ class WeatherGeoViewModel @Inject constructor(
                             is ResultType.Error -> {
                                 _viewState.value = MainViewState.ErrorLoadingItem(result.message)
                             }
+
+                            else -> {}
                         }
                     }
             } catch (exception: Exception) {
@@ -72,6 +74,8 @@ class WeatherGeoViewModel @Inject constructor(
                         is ResultType.Error -> {
                             _viewState.value = MainViewState.ErrorLoadingItem(result.message)
                         }
+
+                        else -> {}
                     }
                 }
         }
